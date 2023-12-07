@@ -4,7 +4,7 @@
 class SalesforceError(Exception):
     """Base Salesforce API exception"""
 
-    message = 'Unknown error occurred for {url}. Response content: {content}'
+    message_template = 'Unknown error occurred for {url}. Response content: {content}'
 
     def __init__(self, url, status, resource_name, content):
         """Initialize the SalesforceError exception
@@ -17,16 +17,18 @@ class SalesforceError(Exception):
             resource_name: Name of the Salesforce resource being queried
             content: content of the response
         """
-        # TODO exceptions don't seem to be using parent constructors at all.
-        # this should be fixed.
-        # pylint: disable=super-init-not-called
+        super().__init__()
         self.url = url
         self.status = status
         self.resource_name = resource_name
         self.content = content
 
+    @property
+    def message(self):
+        return self.__str__()
+
     def __str__(self):
-        return self.message.format(url=self.url, content=self.content)
+        return self.message_template.format(url=self.url, content=self.content)
 
     def __unicode__(self):
         return self.__str__()
@@ -39,7 +41,7 @@ class SalesforceMoreThanOneRecord(SalesforceError):
     response body contains the list of matching records.
     """
 
-    message = 'More than one record for {url}. Response content: {content}'
+    message_template = 'More than one record for {url}. Response content: {content}'
 
 
 class SalesforceMalformedRequest(SalesforceError):
@@ -49,7 +51,7 @@ class SalesforceMalformedRequest(SalesforceError):
     contains an error.
     """
 
-    message = 'Malformed request {url}. Response content: {content}'
+    message_template = 'Malformed request {url}. Response content: {content}'
 
 
 class SalesforceExpiredSession(SalesforceError):
@@ -59,7 +61,7 @@ class SalesforceExpiredSession(SalesforceError):
     body contains the message and errorCode.
     """
 
-    message = 'Expired session for {url}. Response content: {content}'
+    message_template = 'Expired session for {url}. Response content: {content}'
 
 
 class SalesforceRefusedRequest(SalesforceError):
@@ -69,7 +71,7 @@ class SalesforceRefusedRequest(SalesforceError):
     appropriate permissions.
     """
 
-    message = 'Request refused for {url}. Response content: {content}'
+    message_template = 'Request refused for {url}. Response content: {content}'
 
 
 class SalesforceResourceNotFound(SalesforceError):
@@ -79,11 +81,11 @@ class SalesforceResourceNotFound(SalesforceError):
     verify that there are no sharing issues.
     """
 
-    message = 'Resource {name} Not Found. Response content: {content}'
+    message_template = 'Resource {name} Not Found. Response content: {content}'
 
     def __str__(self):
-        return self.message.format(name=self.resource_name,
-                                   content=self.content)
+        return self.message_template.format(name=self.resource_name,
+                                            content=self.content)
 
 
 class SalesforceAuthenticationFailed(SalesforceError):
@@ -91,15 +93,18 @@ class SalesforceAuthenticationFailed(SalesforceError):
     Thrown to indicate that authentication with Salesforce failed.
     """
 
+    message_template = '{code}: {message}'
+
     def __init__(self, code, message):
-        # TODO exceptions don't seem to be using parent constructors at all.
-        # this should be fixed.
-        # pylint: disable=super-init-not-called
+        super().__init__(url=None, status=None, resource_name=None, content=None)
         self.code = code
-        self.message = message
+        self._message = message
 
     def __str__(self):
-        return f'{self.code}: {self.message}'
+        return self.message_template.format(
+            code=self.code,
+            message=self._message
+        )
 
 
 class SalesforceGeneralError(SalesforceError):
@@ -107,10 +112,10 @@ class SalesforceGeneralError(SalesforceError):
     A non-specific Salesforce error.
     """
 
-    message = 'Error Code {status}. Response content: {content}'
+    message_template = 'Error Code {status}. Response content: {content}'
 
     def __str__(self):
-        return self.message.format(status=self.status, content=self.content)
+        return self.message_template.format(status=self.status, content=self.content)
 
 
 class SalesforceOperationError(Exception):
