@@ -5,7 +5,7 @@ from typing import Union
 class SalesforceError(Exception):
     """Base Salesforce API exception"""
 
-    message: str = \
+    message_template: str = \
         'Unknown error occurred for {url}. Response content: {content}'
 
     def __init__(
@@ -33,7 +33,7 @@ class SalesforceError(Exception):
         self.content = content
 
     def __str__(self) -> str:
-        return self.message.format(url=self.url, content=self.content)
+        return self.message_template.format(url=self.url, content=self.content)
 
     def __unicode__(self) -> str:
         return self.__str__()
@@ -46,7 +46,7 @@ class SalesforceMoreThanOneRecord(SalesforceError):
     response body contains the list of matching records.
     """
 
-    message = 'More than one record for {url}. Response content: {content}'
+    message_template = 'More than one record for {url}. Response content: {content}'
 
 
 class SalesforceMalformedRequest(SalesforceError):
@@ -56,7 +56,7 @@ class SalesforceMalformedRequest(SalesforceError):
     contains an error.
     """
 
-    message = 'Malformed request {url}. Response content: {content}'
+    message_template = 'Malformed request {url}. Response content: {content}'
 
 
 class SalesforceExpiredSession(SalesforceError):
@@ -66,7 +66,7 @@ class SalesforceExpiredSession(SalesforceError):
     body contains the message and errorCode.
     """
 
-    message = 'Expired session for {url}. Response content: {content}'
+    message_template = 'Expired session for {url}. Response content: {content}'
 
 
 class SalesforceRefusedRequest(SalesforceError):
@@ -76,7 +76,7 @@ class SalesforceRefusedRequest(SalesforceError):
     appropriate permissions.
     """
 
-    message = 'Request refused for {url}. Response content: {content}'
+    message_template = 'Request refused for {url}. Response content: {content}'
 
 
 class SalesforceResourceNotFound(SalesforceError):
@@ -86,10 +86,10 @@ class SalesforceResourceNotFound(SalesforceError):
     verify that there are no sharing issues.
     """
 
-    message = 'Resource {name} Not Found. Response content: {content}'
+    message_template = 'Resource {name} Not Found. Response content: {content}'
 
     def __str__(self) -> str:
-        return self.message.format(name=self.resource_name,
+        return self.message_template.format(name=self.resource_name,
                                    content=self.content)
 
 
@@ -107,10 +107,10 @@ class SalesforceAuthenticationFailed(SalesforceError):
         # this should be fixed.
         # pylint: disable=super-init-not-called
         self.code = code
-        self.message = message
+        self.message_template = message
 
     def __str__(self) -> str:
-        return f'{self.code}: {self.message}'
+        return f'{self.code}: {self.message_template}'
 
 
 class SalesforceGeneralError(SalesforceError):
@@ -118,10 +118,10 @@ class SalesforceGeneralError(SalesforceError):
     A non-specific Salesforce error.
     """
 
-    message = 'Error Code {status}. Response content: {content}'
+    message_template = 'Error Code {status}. Response content: {content}'
 
     def __str__(self) -> str:
-        return self.message.format(status=self.status, content=self.content)
+        return self.message_template.format(status=self.status, content=self.content)
 
 
 class SalesforceOperationError(Exception):
